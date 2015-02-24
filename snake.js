@@ -6,19 +6,21 @@ function Snake(game) {
     this.game = game;
     this.start_x = 260;
     this.start_y = 260;
-    this.block_length = 20;
+    this.block_len = 20;
     this.body = new Array();
     this.init();
+    this.curr_len = 0;
 }
 
 Snake.prototype.init = function() {
     this.body.length = 0;
-    this.body[0] = game.add.sprite(this.start_x, this.start_y, 'sprite_snake');
-    this.body[1] = game.add.sprite(this.start_x-20, this.start_y, 'sprite_snake');
-    this.body[2] = game.add.sprite(this.start_x-40, this.start_y, 'sprite_snake');
+    for(var i=0; i<3; i++) {
+        this.body[i] = this.game.add.sprite(this.start_x-i*this.block_len, this.start_y, 'sprite_snake');
+    }
 }
     
 Snake.prototype.move = function(dir) {
+    this.curr_len = this.body.length;
     switch(dir) {
         case 'u':
             this.moveUp();
@@ -36,31 +38,77 @@ Snake.prototype.move = function(dir) {
 }
 
 Snake.prototype.moveUp = function() {
+    if(this.body[0].y + this.block_len < 120) {
+        for(var i=0; i<this.body.length; i++) {
+            this.body[i].y = -i*this.block_len + 600;
+        }
+    }
+    var turn_x = this.body[0].x;
+    var turn_y = this.body[0].y;
+    for(var i=1; i<this.body.length; i++) {
+        this.body[i].x = turn_x;
+        this.body[i].y = turn_y;
+        for(var j=0; j<i; j++) {
+            this.body[j].y -= 20;
+        }
+    }
 }
 
 Snake.prototype.moveDown = function() {
+    if(this.body[0].y + this.block_len > 600) {
+        for(var i=0; i<this.body.length; i++) {
+            this.body[i].y = -i*this.block_len + 50;
+        }
+    }
+    var turn_x = this.body[0].x;
+    var turn_y = this.body[0].y;
+    for(var i=1; i<this.body.length; i++) {
+        this.body[i].x = turn_x;
+        this.body[i].y = turn_y;
+        for(var j=0; j<i; j++) {
+            this.body[j].y += 20;
+        }
+    }
 }
 
 Snake.prototype.moveLeft = function() {
-    if(this.body[0].x + this.block_length < 0) {
+    if(this.body[0].x + this.block_len < 0) {
         for(var i=0; i<this.body.length; i++) {
-            this.body[i].x = -i*this.block_length + 600;
+            this.body[i].x = -i*this.block_len+600;
         }
     }
-    for(var i=0; i<this.body.length; i++) {
-        this.body[i].x -= 20;
+    var turn_x = this.body[0].x;
+    var turn_y = this.body[0].y;
+    for(var i=1; i<this.body.length; i++) {
+        this.body[i].x = turn_x;
+        this.body[i].y = turn_y;
+        for(var j=0; j<i; j++) {
+            this.body[j].x -= 20;
+        }
     }
 }
 
-Snake.prototype.moveRight = function() {
-    if(this.body[0].x + this.block_length > 600) {
+Snake.prototype.moveRight = function() {  
+    if(this.body[0].x + this.block_len > 600) {
         for(var i=0; i<this.body.length; i++) {
-            this.body[i].x = -i*this.block_length;
+            this.body[i].x = -i*this.block_len;
         }
     }
-    for(var i=0; i<this.body.length; i++) {
-        this.body[i].x += 20;
+    var turn_x = this.body[0].x;
+    var turn_y = this.body[0].y;
+    for(var i=1; i<this.body.length; i++) {
+        this.body[i].x = turn_x;
+        this.body[i].y = turn_y;
+        for(var j=0; j<i; j++) {
+            this.body[j].x += 20;
+        }
     }
-}
-
     
+}
+
+// destroy everything after the head
+Snake.prototype.kill = function() {
+    for(var i=0; i<this.body.length; i++) {
+        this.body[i].destroy();
+    }
+}
