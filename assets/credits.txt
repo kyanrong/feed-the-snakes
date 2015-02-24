@@ -1,0 +1,3 @@
+Font: Champagne & Limousines
+Translated into bitmap font: http://kvazars.com/littera/
+Reference code: https://github.com/gamedolphin/javascript_snake

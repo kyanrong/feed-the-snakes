@@ -6,11 +6,13 @@ var lastdir;
 var len=20;
 var canMove;
 var movement_timer;
+var score=0, score_text=0;
 
 function preload() {
     this.game.load.image('sprite_bg', 'assets/bg.png');
     this.game.load.image('sprite_snake', 'assets/snake.png');
     this.game.load.image('sprite_food', 'assets/food.png');
+	this.game.load.bitmapFont('font_c&l', 'assets/champagne&limousines.png', 'assets/champagne&limousines.fnt');
 }
 
 function create() {
@@ -32,6 +34,9 @@ function create() {
     key_down.onDown.add(down);
     key_left.onDown.add(left);
     key_right.onDown.add(right);
+	
+	score_text = this.game.add.bitmapText(553, 18, 'font_c&l', score.toString(), 19);
+	score_text.visible = true;
     
 	initSnake();
 	initFood();
@@ -92,6 +97,8 @@ function move() {
 		food.destroy();
 		initFood();
 		grow();
+		score += 1;
+		score_text.setText(score.toString());
 	}
 	
 	var temp = snake.pop();
