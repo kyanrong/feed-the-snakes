@@ -1,21 +1,18 @@
 // initialization
 var game = new Phaser.Game(500, 550, Phaser.AUTO, 'game_div', {preload:preload, create:create, update:update});
 
-var snake, food;
-var lastdir;
+var snake1, snake2;
+var food=[];
 var len=20;
-var canMove;
 var movement_timer;
 var score=0, score_text=0;
-var flip;
-var group;
 
 function preload() {
     this.game.load.image('sprite_bg', 'assets/bg.png');
-    this.game.load.image('sprite_snake', 'assets/snake.png');
-    this.game.load.image('sprite_food', 'assets/food.png');
+    this.game.load.image('sprite_snake1', 'assets/snake1.png');
+	this.game.load.image('sprite_snake2', 'assets/snake2.png');
+    this.game.load.spritesheet('sprite_food', 'assets/food.png', 20, 20);
 	this.game.load.image('sprite_gameover', 'assets/gameover.png');
-	this.game.load.image('sprite_s1', 'assets/s1.png');
 	this.game.load.bitmapFont('font_c&l', 'assets/champagne&limousines.png', 'assets/champagne&limousines.fnt');
 	
 }
@@ -24,124 +21,69 @@ function create() {
     // images
     this.game.add.sprite(0, 0, 'sprite_bg');
 	
-	score_text = this.game.add.bitmapText(460, 18, 'font_c&l', score.toString(), 19);
+	score_text = this.game.add.bitmapText(450, 18, 'font_c&l', score.toString(), 19);
 	score_text.setText(score.toString());
 	score_text.visible = true;
 	
 	cursors = this.game.input.keyboard.createCursorKeys();
+	wasd = 	{	up:		this.game.input.keyboard.addKey(Phaser.Keyboard.W),
+				down: 	this.game.input.keyboard.addKey(Phaser.Keyboard.S),
+				left:	this.game.input.keyboard.addKey(Phaser.Keyboard.A),
+				right:	this.game.input.keyboard.addKey(Phaser.Keyboard.D)
+			};
     
-	initSnake();
+    snake1 = new Snake(this.game, 260, 260, 'r', 'sprite_snake1');
+	snake2 = new Snake(this.game, 260, 300, 'r', 'sprite_snake2');
 	initTimer();
 	initFood();
 }
 
 function update() { 
-    if(canMove) {
-		if(!flip) {
-			if (cursors.up.isDown) {
-				if(lastdir!='d' && lastdir!='u'){
-					lastdir = 'u';
-					canMove = false;
-				}
-			}
-			else if (cursors.down.isDown) {
-				if(lastdir!='u' && lastdir!='d'){
-					lastdir = 'd';
-					canMove = false;
-				}        
-			}
-			if (cursors.left.isDown) {
-				if(lastdir!='r' && lastdir!='l'){
-					lastdir = 'l';
-					canMove = false;
-				}
-			}
-			else if (cursors.right.isDown) {
-				if(lastdir!='l' && lastdir!='r'){
-					lastdir = 'r';
-					canMove = false;
-				}
-			}
-		}
-		else {
-			if(cursors.up.isDown) {
-				if(lastdir!='d' && lastdir!= 'u') {
-					lastdir = 'd';
-					canMove = false;
-				}
-			}
-			else if(cursors.down.isDown) {
-				if(lastdir!='u' && lastdir!='d') {
-					lastdir = 'u';
-					canMove = false;
-				}
-			}
-			if(cursors.left.isDown) {
-				if(lastdir!='r' && lastdir!='l') {
-					lastdir = 'r';
-					canMove = false;
-				}
-			}			
-			else if(cursors.right.isDown) {
-				if(lastdir!='l' && lastdir!='r') {
-					lastdir = 'l';
-					canMove = false;
-				}
-			}
-		}
-		
-	}
-
+	snake1.updateS1Movement();
+	snake2.updateS2Movement();
 }
 
-//
 function move() {
-	var curr_len = snake.length;
-	switch(lastdir) {
-		case 'u':	snake[curr_len-1].y = snake[0].y - len;
-					snake[curr_len-1].x = snake[0].x;
-					break;			
-		case 'd':	snake[curr_len-1].y = snake[0].y + len;
-					snake[curr_len-1].x = snake[0].x;
-					break;
-		case 'l':	snake[curr_len-1].x = snake[0].x - len;
-					snake[curr_len-1].y = snake[0].y;
-					break;
-		case 'r':	snake[curr_len-1].x = snake[0].x + len;
-					snake[curr_len-1].y = snake[0].y;
-					break;
-	}
 
-	// if snake reaches boundary, make it appear at the opposite side
-	if(snake[curr_len-1].x > 500) {
-		snake[curr_len-1].x = 0;
+	snake1.move();
+	if(checkOwnCollision(snake1)) {
+		this.game.add.sprite(0, 50, 'sprite_gameover');
 	}
-	if(snake[curr_len-1].x < 0) {
-		snake[curr_len-1].x = 500;
+	var result = checkFoodCollision(snake1.body[0]);
+	if(result[0]) {
+		//initFood();
+		snake1.grow(food[result[1]].framenum+1);
+		score += food[result[1]].framenum+1;
+		food[result[1]].sprite.destroy();
+		food[result[1]] = new Food(this.game);
+		score_text.setText(score.toString());
+		//snake1.flip = !snake1.flip;
 	}
-	if(snake[curr_len-1].y > 550) {
-		snake[curr_len-1].y = 50;
+	var temp = snake1.body.pop();
+	snake1.body.unshift(temp);
+	snake1.canMove = true;
+	
+	snake2.move();
+	if(checkOwnCollision(snake2)) {
+		this.game.add.sprite(0, 50, 'sprite_gameover');
 	}
-	if(snake[curr_len-1].y < 50) {
-		snake[curr_len-1].y = 550;
+	var result = checkFoodCollision(snake2.body[0]);
+	if(result[0]) {
+		//initFood();
+		snake2.grow(food[result[1]].framenum+1);
+		score += food[result[1]].framenum+1;
+		food[result[1]].sprite.destroy();
+		food[result[1]] = new Food(this.game);
+		score_text.setText(score.toString());
+		//snake1.flip = !snake1.flip;
 	}
+	var temp = snake2.body.pop();
+	snake2.body.unshift(temp);
+	snake2.canMove = true;	
 	
 	if(checkSnakeCollision()) {
 		this.game.add.sprite(0, 50, 'sprite_gameover');
 	}
-	
-	if(checkCollision(snake[0], food)) {
-		food.destroy();
-		initFood();
-		grow();
-		score += 1;
-		score_text.setText(score.toString());
-		flip = !flip;
-	}
-	
-	var temp = snake.pop();
-	snake.unshift(temp);
-	canMove = true;
 }
 
 function checkCollision(a, b) {
@@ -153,33 +95,39 @@ function checkCollision(a, b) {
 	return Phaser.Rectangle.intersects(bounds_a, bounds_b);
 }
 
-function checkSnakeCollision() {
-	for(var i=1; i<snake.length; i++) {
-		var temp = snake[i];
-		if(checkCollision(snake[0], temp)) {
+// snake collide with itself
+function checkOwnCollision(snake) {
+	for(var i=1; i<snake.body.length; i++) {
+		var temp = snake.body[i];
+		if(checkCollision(snake.body[0], temp)) {
 			return true;
 		}
 	}
 	return false;
 }
 
-function grow() {
-	var temp = this.game.add.sprite(snake[1].x, snake[1].y, 'sprite_snake');
-	snake.splice(1, 0, temp);
+// snake collide with another snake
+function checkSnakeCollision() {
+	for(var i=0; i<snake1.body.length; i++) {
+		for(var j=0; j<snake2.body.length; j++) {
+			if(checkCollision(snake2.body[j], snake1.body[i])) {
+				return true;
+			}
+		}
+	}
+	return false;
+
 }
 
-// inits
-function initSnake() {
-	group = new Phaser.Group(this.game);
-	snake = [];
-	for(var i=0; i<5; i++) {
-		var temp = this.game.add.sprite(260-i*len, 260, 'sprite_snake');
-		snake.push(temp);
-		group.add(temp);
+// snake collide with food[]
+function checkFoodCollision(mouth) {
+	for(var i=0; i<food.length; i++) {
+		var temp = food[i].sprite;
+		if(checkCollision(mouth, temp)) {
+			return [true, i];
+		}
 	}
-	lastdir = 'r';
-	flip = false;
-	canMove = true;
+	return [false, -1];
 }
 
 function initTimer() {
@@ -187,11 +135,8 @@ function initTimer() {
 }
 
 function initFood() {
-	var x = Math.floor(Math.random()*25);
-    var y = Math.floor(Math.random()*25);
-    x = x * 20;
-    y = y * 20 + 50;
-	
-	food = this.game.add.sprite(x, y, 'sprite_food');
+	for(var i=0; i<10; i++) {
+		food[i] = new Food(this.game);
+	}
 }
 

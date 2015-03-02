@@ -1,114 +1,171 @@
-// width=600, height= 600 
-// start_x=0, start_y=50
-//snake length = 20, need to go in multiples of 20
+// width = 500, height = 500
+// snake length = 20, need to go in multiples of 20
 
-function Snake(game) { 
-    this.game = game;
-    this.start_x = 260;
-    this.start_y = 260;
-    this.block_len = 20;
-    this.body = new Array();
-    this.init();
-    this.curr_len = 0;
+function Snake(game, x, y, dir, snaketype) {
+	this.game = game;
+	this.start_x = x;
+	this.start_y = y;
+	this.dir = dir;
+	this.snaketype = snaketype;
+	this.flip = false;
+	this.canMove = true;
+	this.body = [];
+	
+	for(var i=0; i<5; i++) {
+		var temp = this.game.add.sprite(this.start_x-i*len, this.start_y, this.snaketype);
+		this.body.push(temp);
+	}
 }
 
-Snake.prototype.init = function() {
-    this.body.length = 0;
-    for(var i=0; i<3; i++) {
-        this.body[i] = this.game.add.sprite(this.start_x-i*this.block_len, this.start_y, 'sprite_snake');
-    }
-}
-    
-Snake.prototype.move = function(dir) {
-    this.curr_len = this.body.length;
-    switch(dir) {
-        case 'u':
-            this.moveUp();
-            break;
-        case 'd':
-            this.moveDown();
-            break;
-        case 'l':
-            this.moveLeft();
-            break;
-        case 'r':
-            this.moveRight();
-            break;
-    }
+Snake.prototype.grow = function(num) {
+	for(var i=0; i<num; i++) {
+		var temp = this.game.add.sprite(this.body[1].x, this.body[1].y, this.snaketype);
+		this.body.splice(1, 0, temp);
+	}
 }
 
-Snake.prototype.moveUp = function() {
-    if(this.body[0].y + this.block_len < 120) {
-        for(var i=0; i<this.body.length; i++) {
-            this.body[i].y = -i*this.block_len + 600;
-        }
-    }
-    var turn_x = this.body[0].x;
-    var turn_y = this.body[0].y;
-    for(var i=1; i<this.body.length; i++) {
-        this.body[i].x = turn_x;
-        this.body[i].y = turn_y;
-        for(var j=0; j<i; j++) {
-            this.body[j].y -= 20;
-        }
-    }
+Snake.prototype.move = function() {
+	var currlen = this.body.length;
+	switch(this.dir) {
+		case 'u':	this.body[currlen-1].y = this.body[0].y - len;
+					this.body[currlen-1].x = this.body[0].x;
+					break;
+		case 'd': 	this.body[currlen-1].y = this.body[0].y + len;
+					this.body[currlen-1].x = this.body[0].x;
+					break;
+		case 'l':	this.body[currlen-1].x = this.body[0].x - len;
+					this.body[currlen-1].y = this.body[0].y;
+					break;
+		case 'r':	this.body[currlen-1].x = this.body[0].x + len;
+					this.body[currlen-1].y = this.body[0].y;
+					break;			
+	}
+	
+	// if snake reaches boundary, make it appear at the opposite side
+	if(this.body[currlen-1].x > 500) {
+		this.body[currlen-1].x = 0;
+	}
+	if(this.body[currlen-1].y < 0) {
+		this.body[currlen-1].y = 500;
+	}
+	if(this.body[currlen-1].y > 550) {
+		this.body[currlen-1].y = 50;
+	}
+	if(this.body[currlen-1].y < 50) {
+		this.body[currlen-1].y = 550;
+	}
 }
 
-Snake.prototype.moveDown = function() {
-    if(this.body[0].y + this.block_len > 600) {
-        for(var i=0; i<this.body.length; i++) {
-            this.body[i].y = -i*this.block_len + 50;
-        }
-    }
-    var turn_x = this.body[0].x;
-    var turn_y = this.body[0].y;
-    for(var i=1; i<this.body.length; i++) {
-        this.body[i].x = turn_x;
-        this.body[i].y = turn_y;
-        for(var j=0; j<i; j++) {
-            this.body[j].y += 20;
-        }
-    }
+Snake.prototype.updateS1Movement = function() {
+	if(this.canMove) {
+		if(!this.flip) {
+			if(cursors.up.isDown) {
+				if(this.dir!='d' && this.dir!='u') {
+					this.dir = 'u';
+					this.canMove = false;
+				}
+			}
+			else if(cursors.down.isDown) {
+				if(this.dir!='u' && this.dir!='d') {
+					this.dir = 'd';
+					this.canMove = false;
+				}
+			}
+			if(cursors.left.isDown) {
+				if(this.dir!='r' && this.dir!='l') {
+					this.dir = 'l';
+					this.canMove = false;
+				}
+			}
+			else if(cursors.right.isDown) {
+				if(this.dir!='l' && this.dir!='r') {
+					this.dir='r';
+					this.canMove = false;
+				}
+			}
+		}
+		else {
+			if(cursors.up.isDown) {
+				if(this.dir!='d' && this.dir!='u') {
+					this.dir = 'd';
+					this.canMove = false;
+				}
+			}
+			else if(cursors.down.isDown) {
+				if(this.dir!='u' && this.dir!='d') {
+					this.dir = 'u';
+					this.canMove = false;
+				}
+			}
+			if(cursors.left.isDown) {
+				if(this.dir!='r' && this.dir!='l') {
+					this.dir = 'r';
+					this.canMove = false;
+				}
+			}
+			else if(cursors.right.isDown) {
+				if(this.dir!='l' && this.dir!='r') {
+					this.dir='l';
+					this.canMove = false;
+				}
+			}
+		}
+	}
 }
 
-Snake.prototype.moveLeft = function() {
-    if(this.body[0].x + this.block_len < 0) {
-        for(var i=0; i<this.body.length; i++) {
-            this.body[i].x = -i*this.block_len+600;
-        }
-    }
-    var turn_x = this.body[0].x;
-    var turn_y = this.body[0].y;
-    for(var i=1; i<this.body.length; i++) {
-        this.body[i].x = turn_x;
-        this.body[i].y = turn_y;
-        for(var j=0; j<i; j++) {
-            this.body[j].x -= 20;
-        }
-    }
-}
-
-Snake.prototype.moveRight = function() {  
-    if(this.body[0].x + this.block_len > 600) {
-        for(var i=0; i<this.body.length; i++) {
-            this.body[i].x = -i*this.block_len;
-        }
-    }
-    var turn_x = this.body[0].x;
-    var turn_y = this.body[0].y;
-    for(var i=1; i<this.body.length; i++) {
-        this.body[i].x = turn_x;
-        this.body[i].y = turn_y;
-        for(var j=0; j<i; j++) {
-            this.body[j].x += 20;
-        }
-    }
-    
-}
-
-// destroy everything after the head
-Snake.prototype.kill = function() {
-    for(var i=0; i<this.body.length; i++) {
-        this.body[i].destroy();
-    }
+Snake.prototype.updateS2Movement = function() {
+	if(this.canMove) {
+		if(!this.flip) {
+			if(wasd.up.isDown) {
+				if(this.dir!='d' && this.dir!='u') {
+					this.dir = 'u';
+					this.canMove = false;
+				}
+			}
+			else if(wasd.down.isDown) {
+				if(this.dir!='u' && this.dir!='d') {
+					this.dir = 'd';
+					this.canMove = false;
+				}
+			}
+			if(wasd.left.isDown) {
+				if(this.dir!='r' && this.dir!='l') {
+					this.dir = 'l';
+					this.canMove = false;
+				}
+			}
+			else if(wasd.right.isDown) {
+				if(this.dir!='l' && this.dir!='r') {
+					this.dir='r';
+					this.canMove = false;
+				}
+			}
+		}
+		else {
+			if(wasd.up.isDown) {
+				if(this.dir!='d' && this.dir!='u') {
+					this.dir = 'd';
+					this.canMove = false;
+				}
+			}
+			else if(wasd.down.isDown) {
+				if(this.dir!='u' && this.dir!='d') {
+					this.dir = 'u';
+					this.canMove = false;
+				}
+			}
+			if(wasd.left.isDown) {
+				if(this.dir!='r' && this.dir!='l') {
+					this.dir = 'r';
+					this.canMove = false;
+				}
+			}
+			else if(wasd.right.isDown) {
+				if(this.dir!='l' && this.dir!='r') {
+					this.dir='l';
+					this.canMove = false;
+				}
+			}
+		}
+	}
 }

@@ -1,16 +1,16 @@
-// width=600, height= 600 
-// start_x=0, start_y=50
-//snake length = 20, need to go in multiples of 20
+// width = 500, height = 500
+// snake length = 20, need to go in multiples of 20
 
-function Food(game) { 
-    this.game = game;
-    this.make();
+function Food(game) {
+	this.game = game;
+	this.framenum = Math.floor(Math.random()*5);
+	this.start_x = Math.floor(Math.random()*25) * 20;
+	this.start_y = Math.floor(Math.random()*25) * 20 + 50;
+	this.sprite =this.spawn();
 }
 
-Food.prototype.make = function() {
-    var x = Math.floor(Math.random()*30);
-    var y = Math.floor(Math.random()*30);
-    x = x * 20;
-    y = y * 20 + 50;
-    this.game.add.sprite(x, y, 'sprite_food');
+Food.prototype.spawn = function() {
+	var temp = this.game.add.sprite(this.start_x, this.start_y, 'sprite_food', this.framenum);
+	return temp;
 }
+
