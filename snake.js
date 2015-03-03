@@ -11,8 +11,8 @@ function Snake(game, x, y, dir, snaketype) {
 	this.canMove = true;
 	this.body = [];
 	
-	for(var i=0; i<5; i++) {
-		var temp = this.game.add.sprite(this.start_x-i*len, this.start_y, this.snaketype);
+	for(var i=0; i<3; i++) {
+		var temp = this.game.add.sprite(this.start_x, this.start_y+i*len, this.snaketype);
 		this.body.push(temp);
 	}
 }
@@ -42,7 +42,7 @@ Snake.prototype.move = function() {
 	}
 	
 	// if snake reaches boundary, make it appear at the opposite side
-	if(this.body[currlen-1].x > 500) {
+	/*if(this.body[currlen-1].x > 500) {
 		this.body[currlen-1].x = 0;
 	}
 	if(this.body[currlen-1].y < 0) {
@@ -53,6 +53,12 @@ Snake.prototype.move = function() {
 	}
 	if(this.body[currlen-1].y < 50) {
 		this.body[currlen-1].y = 550;
+	}*/
+	
+	if(this.body[currlen-1].x > 500 || this.body[currlen-1].x < 0 ||
+		this.body[currlen-1].y > 550 || this.body[currlen-1].y < 50) {
+		this.game.add.sprite(0, 50, 'sprite_gameover');	
+		destroy();
 	}
 }
 
